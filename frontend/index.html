@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGVOT - Plano de Visitas de Orientação Técnica</title>
+  <style>
+    :root {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #1f2a44;
+      background-color: #f5f7fb;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+    }
+    header {
+      background: #0b3d91;
+      color: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    header h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.9;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    .card h2 {
+      margin: 0 0 12px 0;
+      font-size: 18px;
+      color: #0b3d91;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th {
+      background: #edf2ff;
+      font-weight: 600;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #075985;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .alerts li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SGVOT - PVOT 2026</h1>
+    <p>Gestão integrada de visitas de orientação técnica do 7º CGCFEx.</p>
+  </header>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Visitas planejadas</h2>
+      <div id="visitas-planejadas">-</div>
+    </div>
+    <div class="card">
+      <h2>Visitas concluídas</h2>
+      <div id="visitas-concluidas">-</div>
+    </div>
+    <div class="card">
+      <h2>Distribuição por estado</h2>
+      <div id="distribuicao-estado">-</div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Alertas críticos</h2>
+      <ul id="alertas" class="alerts"></ul>
+    </div>
+    <div class="card">
+      <h2>Distribuição mensal</h2>
+      <div id="distribuicao-mensal">-</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Próximas visitas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>UGA</th>
+          <th>Data</th>
+          <th>Duração</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="proximas-visitas"></tbody>
+    </table>
+  </section>
+
+  <script>
+    async function loadDashboard() {
+      const response = await fetch('/dashboard/resumo');
+      const data = await response.json();
+
+      document.getElementById('visitas-planejadas').textContent = data.visitas_planejadas;
+      document.getElementById('visitas-concluidas').textContent = data.visitas_concluidas;
+
+      const estadoEntries = Object.entries(data.distribuicao_estado)
+        .map(([estado, total]) => `${estado}: ${total}`)
+        .join(' | ');
+      document.getElementById('distribuicao-estado').textContent = estadoEntries || '-';
+
+      const mensalEntries = Object.entries(data.distribuicao_mensal)
+        .map(([mes, total]) => `${mes}: ${total}`)
+        .join(' | ');
+      document.getElementById('distribuicao-mensal').textContent = mensalEntries || '-';
+
+      const alertas = document.getElementById('alertas');
+      alertas.innerHTML = '';
+      if (data.alertas.length === 0) {
+        alertas.innerHTML = '<li>Sem alertas pendentes.</li>';
+      } else {
+        data.alertas.forEach(alerta => {
+          const li = document.createElement('li');
+          li.textContent = alerta;
+          alertas.appendChild(li);
+        });
+      }
+
+      const proximas = document.getElementById('proximas-visitas');
+      proximas.innerHTML = '';
+      data.proximas_visitas.forEach(visita => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${visita.uga_sigla}</td>
+          <td>${new Date(visita.data_inicio).toLocaleDateString('pt-BR')}</td>
+          <td>${visita.duracao_dias} dia(s)</td>
+          <td><span class="pill">${visita.status}</span></td>
+        `;
+        proximas.appendChild(tr);
+      });
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
