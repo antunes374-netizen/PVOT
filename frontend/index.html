@@ -75,6 +75,54 @@
     .alerts li {
       margin-bottom: 8px;
     }
+    form.uga-form {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    form.uga-form label {
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f2a44;
+      gap: 4px;
+    }
+    form.uga-form input,
+    form.uga-form select {
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+    }
+    form.uga-form .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    form.uga-form button {
+      background: #0b3d91;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    form.uga-form button:hover {
+      background: #08306b;
+    }
+    .form-feedback {
+      grid-column: 1 / -1;
+      font-size: 13px;
+      color: #075985;
+    }
+    .form-feedback.error {
+      color: #b91c1c;
+    }
   </style>
 </head>
 <body>
@@ -107,6 +155,47 @@
       <h2>Distribuição mensal</h2>
       <div id="distribuicao-mensal">-</div>
     </div>
+  </section>
+
+  <section class="card" style="margin-bottom: 24px;">
+    <h2>Cadastro de UGA</h2>
+    <form id="uga-form" class="uga-form">
+      <label>
+        Sigla
+        <input type="text" name="sigla" required />
+      </label>
+      <label>
+        Nome completo
+        <input type="text" name="nome_completo" required />
+      </label>
+      <label>
+        Código UASG
+        <input type="text" name="codigo_uasg" required />
+      </label>
+      <label>
+        Cidade
+        <input type="text" name="cidade" required />
+      </label>
+      <label>
+        Estado
+        <select id="estado-select" name="estado" required>
+          <option value="">Selecione o estado...</option>
+        </select>
+      </label>
+      <label>
+        Tipo de UG
+        <select name="tipo_ug" required>
+          <option value="Plena">Plena</option>
+          <option value="Patrimonial">Patrimonial</option>
+          <option value="Custo">Custo</option>
+          <option value="Orçamentária">Orçamentária</option>
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="submit">Cadastrar UGA</button>
+      </div>
+      <div id="uga-form-feedback" class="form-feedback"></div>
+    </form>
   </section>
 
   <section>
@@ -168,6 +257,91 @@
       });
     }
 
+    const ESTADOS_BRASILEIROS = [
+      { sigla: 'AC', nome: 'Acre' },
+      { sigla: 'AL', nome: 'Alagoas' },
+      { sigla: 'AP', nome: 'Amapá' },
+      { sigla: 'AM', nome: 'Amazonas' },
+      { sigla: 'BA', nome: 'Bahia' },
+      { sigla: 'CE', nome: 'Ceará' },
+      { sigla: 'DF', nome: 'Distrito Federal' },
+      { sigla: 'ES', nome: 'Espírito Santo' },
+      { sigla: 'GO', nome: 'Goiás' },
+      { sigla: 'MA', nome: 'Maranhão' },
+      { sigla: 'MT', nome: 'Mato Grosso' },
+      { sigla: 'MS', nome: 'Mato Grosso do Sul' },
+      { sigla: 'MG', nome: 'Minas Gerais' },
+      { sigla: 'PA', nome: 'Pará' },
+      { sigla: 'PB', nome: 'Paraíba' },
+      { sigla: 'PR', nome: 'Paraná' },
+      { sigla: 'PE', nome: 'Pernambuco' },
+      { sigla: 'PI', nome: 'Piauí' },
+      { sigla: 'RJ', nome: 'Rio de Janeiro' },
+      { sigla: 'RN', nome: 'Rio Grande do Norte' },
+      { sigla: 'RS', nome: 'Rio Grande do Sul' },
+      { sigla: 'RO', nome: 'Rondônia' },
+      { sigla: 'RR', nome: 'Roraima' },
+      { sigla: 'SC', nome: 'Santa Catarina' },
+      { sigla: 'SP', nome: 'São Paulo' },
+      { sigla: 'SE', nome: 'Sergipe' },
+      { sigla: 'TO', nome: 'Tocantins' }
+    ];
+
+    async function popularSeletorEstados() {
+      const select = document.getElementById('estado-select');
+      let siglas = [];
+      try {
+        const response = await fetch('/ugas/estados');
+        if (response.ok) {
+          siglas = await response.json();
+        }
+      } catch (err) {
+        siglas = [];
+      }
+      if (!Array.isArray(siglas) || siglas.length === 0) {
+        siglas = ESTADOS_BRASILEIROS.map(e => e.sigla);
+      }
+      const nomes = Object.fromEntries(ESTADOS_BRASILEIROS.map(e => [e.sigla, e.nome]));
+      siglas.forEach(sigla => {
+        const option = document.createElement('option');
+        option.value = sigla;
+        option.textContent = nomes[sigla] ? `${sigla} - ${nomes[sigla]}` : sigla;
+        select.appendChild(option);
+      });
+    }
+
+    function inicializarFormularioUga() {
+      const form = document.getElementById('uga-form');
+      const feedback = document.getElementById('uga-form-feedback');
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        feedback.textContent = '';
+        feedback.classList.remove('error');
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        payload.possui_paiol = false;
+        payload.opera_carro_pipa = false;
+        payload.sensivel = false;
+        try {
+          const response = await fetch('/ugas/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            throw new Error(`Erro ${response.status}`);
+          }
+          feedback.textContent = 'UGA cadastrada com sucesso.';
+          form.reset();
+        } catch (err) {
+          feedback.classList.add('error');
+          feedback.textContent = `Não foi possível cadastrar: ${err.message}`;
+        }
+      });
+    }
+
+    popularSeletorEstados();
+    inicializarFormularioUga();
     loadDashboard();
   </script>
 </body>
