@@ -2,7 +2,17 @@ from datetime import date
 from typing import List, Optional
 from pydantic import BaseModel
 
-from .models import CategoriaDiaria, FuncaoNaVisita, PostoGraduacao, Secao, StatusPVOT, StatusVisita, TipoUG, TipoVisita
+from .models import (
+    CategoriaDiaria,
+    EstadoBrasileiro,
+    FuncaoNaVisita,
+    PostoGraduacao,
+    Secao,
+    StatusPVOT,
+    StatusVisita,
+    TipoUG,
+    TipoVisita,
+)
 
 
 class UgaBase(BaseModel):
@@ -10,7 +20,7 @@ class UgaBase(BaseModel):
     nome_completo: str
     codigo_uasg: str
     cidade: str
-    estado: str
+    estado: EstadoBrasileiro
     endereco: Optional[str] = None
     tipo_ug: TipoUG
     ug_vinculadora_id: Optional[int] = None

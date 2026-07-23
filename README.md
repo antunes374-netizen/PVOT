@@ -29,6 +29,11 @@ O script `python -m app.seed` carrega:
 - PVOT 2026 com 36 visitas pré-cadastradas
 - Militares de exemplo para demonstração
 
+## Siglas de estados
+
+O cadastro de UGA aceita as 27 siglas das unidades federativas brasileiras. O
+seletor pode ser preenchido pelo endpoint `GET /ugas/estados`.
+
 ## Próximos passos
 
 - Implementar autenticação JWT e perfis de usuário

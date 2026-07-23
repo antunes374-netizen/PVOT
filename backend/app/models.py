@@ -14,6 +14,38 @@ class TipoUG(str, Enum):
     ORCAMENTARIA = "Orçamentária"
 
 
+class EstadoBrasileiro(str, Enum):
+    """Siglas das 27 unidades federativas do Brasil usadas no cadastro de UGAs."""
+
+    AC = "AC"
+    AL = "AL"
+    AP = "AP"
+    AM = "AM"
+    BA = "BA"
+    CE = "CE"
+    DF = "DF"
+    ES = "ES"
+    GO = "GO"
+    MA = "MA"
+    MT = "MT"
+    MS = "MS"
+    MG = "MG"
+    PA = "PA"
+    PB = "PB"
+    PR = "PR"
+    PE = "PE"
+    PI = "PI"
+    RJ = "RJ"
+    RN = "RN"
+    RS = "RS"
+    RO = "RO"
+    RR = "RR"
+    SC = "SC"
+    SP = "SP"
+    SE = "SE"
+    TO = "TO"
+
+
 class PostoGraduacao(str, Enum):
     CEL = "Cel"
     TEN_CEL = "Ten Cel"
