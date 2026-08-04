@@ -7,6 +7,21 @@ from .. import models, schemas
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
+MESES_PT_BR = {
+    1: "Janeiro",
+    2: "Fevereiro",
+    3: "Março",
+    4: "Abril",
+    5: "Maio",
+    6: "Junho",
+    7: "Julho",
+    8: "Agosto",
+    9: "Setembro",
+    10: "Outubro",
+    11: "Novembro",
+    12: "Dezembro",
+}
+
 
 def get_db():
     db = SessionLocal()
@@ -59,7 +74,7 @@ def dashboard_resumo(db: Session = Depends(get_db)):
     distribuicao_mensal = {}
     for visita in visitas:
         distribuicao_estado[visita.uga.estado] = distribuicao_estado.get(visita.uga.estado, 0) + 1
-        mes = visita.data_inicio.strftime("%m/%Y")
+        mes = f"{MESES_PT_BR[visita.data_inicio.month]}/{visita.data_inicio.year}"
         distribuicao_mensal[mes] = distribuicao_mensal.get(mes, 0) + 1
 
     proximas = [
